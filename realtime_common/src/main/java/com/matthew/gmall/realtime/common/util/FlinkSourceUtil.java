@@ -9,6 +9,7 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.connector.kafka.source.KafkaSource;
 import org.apache.flink.connector.kafka.source.enumerator.initializer.OffsetsInitializer;
+import org.apache.flink.table.catalog.ObjectPath;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -30,7 +31,8 @@ public class FlinkSourceUtil {
                 .setBootstrapServers(Constant.KAFKA_BROKERS)
                 .setGroupId(groupId)
                 .setTopics(topic)
-                .setStartingOffsets(OffsetsInitializer.latest())
+                .setStartingOffsets(OffsetsInitializer.earliest())
+                //处理序列器不能处理空消息的bug
                 .setValueOnlyDeserializer(new DeserializationSchema<String>() {
                     @Override
                     public String deserialize(byte[] message) throws IOException {
@@ -55,6 +57,7 @@ public class FlinkSourceUtil {
 
     //mysql-CDC-Source
     public static MySqlSource<String> getMysqlCDCSource(String serverId,String dataBaseList,String tableList,StartupOptions startupOptions){
+        //debeziumProperties 的设置
         Properties properties = new Properties();
         properties.setProperty("converters","dateConverters");
         properties.setProperty("dateConverters.type","com.matthew.gmall.realtime.common.function.MySqlDateTimeConverter");
@@ -62,6 +65,11 @@ public class FlinkSourceUtil {
         properties.setProperty("dateConverters.format.time", "HH:mm:ss");
         properties.setProperty("dateConverters.format.datetime", "yyyy-MM-dd HH:mm");
         properties.setProperty("dateConverters.format.timestamp", "yyyy-MM-dd HH:mm:ss");
+
+        //Jdbc Properties 的设置
+        Properties props = new Properties();
+        props.setProperty("useSSL", "false");
+        props.setProperty("allowPublicKeyRetrieval", "true");
         //ods的MySQLSource
         return MySqlSource.<String>builder()
                 .hostname(Constant.MYSQL_HOST)
@@ -69,8 +77,11 @@ public class FlinkSourceUtil {
                 .username(Constant.MYSQL_USER_NAME)
                 .password(Constant.MYSQL_PASSWORD)
                 .serverId(serverId)
+                .jdbcProperties(props)
                 .databaseList(dataBaseList)
                 .tableList(tableList)
+                //无主键表指定一列为分片列
+                .chunkKeyColumn(new ObjectPath("gamll","id"),"id")
                 .startupOptions(startupOptions)
                 .debeziumProperties(properties)
                 .deserializer(new JsonDebeziumDeserializationSchema())

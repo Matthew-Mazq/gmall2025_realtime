@@ -18,7 +18,7 @@ import org.apache.flink.connector.kafka.sink.KafkaSink;
 public class FlinkSinkUtil {
     //获取kafka sink
     public static KafkaSink<String> getKafkaSink(String topic){
-        if(StringUtils.isBlank(topic)){
+        if(topic == null){
             throw new RuntimeException("topic为空，请确认kafkaSink!");
         }
         return KafkaSink.<String>builder()

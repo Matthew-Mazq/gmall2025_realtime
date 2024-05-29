@@ -24,7 +24,7 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
  * @Version 1.0
  */
 public abstract class BaseApp {
-    public abstract void handle(StreamExecutionEnvironment env, SingleOutputStreamOperator<String> stream);
+    public abstract void handle(StreamExecutionEnvironment env, SingleOutputStreamOperator<String> strDS);
 
     public void start(int port,int parallelism,String ckAndGroupId,String topic){
         //todo 1.获取流执行环境
