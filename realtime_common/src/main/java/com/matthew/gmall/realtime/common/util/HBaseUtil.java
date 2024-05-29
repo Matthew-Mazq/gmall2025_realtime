@@ -85,7 +85,7 @@ public class HBaseUtil {
         admin.deleteTable(tableNm);
         admin.close();
 
-        log.info(tableName + "在HBASE中删除成功!");
+        log.info(tableName + "在HBASE中删除成功!!");
     }
 
 }
