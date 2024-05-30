@@ -35,6 +35,7 @@ public class Constant {
                                     ",gmall.spu_info\n" +
                                     ",gmall.user_info";
     public static final String HBASE_NAMESPACE = "gmall";
+    public static final String HBASE_ZOOKEEPER_QUORUM ="node1,node2,node3";
 
     public static final String MYSQL_DRIVER = "com.mysql.cj.jdbc.Driver";
     public static final String MYSQL_URL = "jdbc:mysql://node1:3306?useSSL=false";
