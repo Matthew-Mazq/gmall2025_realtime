@@ -35,6 +35,7 @@ public class OdsApp{
         KafkaSink<String> kafkaSink = FlinkSinkUtil.getKafkaSink(Constant.TOPIC_DB);
 
         //todo 3.将数据写入到kafka中
+        odsDimSource.printToErr();
         odsDimSource.sinkTo(kafkaSink);
 
         env.execute();
