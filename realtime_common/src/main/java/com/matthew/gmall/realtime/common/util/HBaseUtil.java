@@ -1,5 +1,6 @@
 package com.matthew.gmall.realtime.common.util;
 
+import com.alibaba.fastjson.JSONObject;
 import com.matthew.gmall.realtime.common.constant.Constant;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
@@ -108,9 +109,64 @@ public class HBaseUtil {
                 }
             }
         }
+    }
+    /**
+     * 用于向 HBase 目标表写入数据
+     * @param nameSpace HBase 命名空间
+     * @param tableName HBase 表名
+     * @param rowKey 数据的 row_key
+     * @param family 数据所属的列族
+     * @param data 待写出的数据
+     * @throws IOException 可能抛出的异常
+     */
+    public static void putRow(String nameSpace,String tableName,
+                              String rowKey,
+                              String family,
+                              JSONObject data
+                                            ) throws IOException {
+        //1.获取table对象
+        Table table = connection.getTable(TableName.valueOf(nameSpace, tableName));
+        Put put = new Put(Bytes.toBytes(rowKey));
 
+        //2.把每列数据除了op放入put中
+        for (String key : data.keySet()) {
+            if(!"op".equals(key)){
+                //空值过滤，为空的列不用写入HBASE中，这里不处理会出现空指针异常
+                String columnValue = data.getString(key);
+                if(columnValue != null){
+                    put.addColumn(
+                            Bytes.toBytes(family),
+                            Bytes.toBytes(key),
+                            Bytes.toBytes(columnValue)
+                            );
+                }
+            }
+        }
 
+        //3.把put对象添加到table中
+        table.put(put);
 
+        //4.关闭table对象
+        try {
+            table.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void deleteRow(String nameSpace,String tableName, String rowKey) throws IOException {
+        //1.获取table对象
+        Table table = connection.getTable(TableName.valueOf(nameSpace, tableName));
+        //2.构造delete对象
+        Delete delete = new Delete(Bytes.toBytes(rowKey));
+        table.delete(delete);
+
+        //3.关闭table对象
+        try {
+            table.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }

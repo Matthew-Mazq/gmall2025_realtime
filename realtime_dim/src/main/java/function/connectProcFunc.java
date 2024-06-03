@@ -67,14 +67,11 @@ public class connectProcFunc extends BroadcastProcessFunction<JSONObject, TableP
         //判断是否包含该表名
         tableProcessDim = !broadcastState.contains(sourceTable) ? broadcastState.get(sourceTable) : configMap.get(sourceTable);
         if (tableProcessDim != null) {
-            //过滤不需要写出到hbase的字段以及delete事件的数据
             //({"birthday":"1991-06-07","op":"u","gender":"M","create_time":"2022-06-08 00:00:00","login_name":"vihcj30p1","nick_name":"豪心","name":"魏豪心","user_level":"1","phone_num":"13956932645","id":7,"email":"vihcj30p1@live.com"}
             // ,TableProcessDim(sourceTable=user_info, sinkTable=dim_user_info, sinkColumns=id,login_name,name,user_level,birthday,gender,create_time,operate_time, sinkFamily=info, sinkRowKey=id, op=r))
-            if (!"d".equals(jsonObj.getString("op"))) {
                 JSONObject afterJsonObj = jsonObj.getJSONObject("after");
                 afterJsonObj.put("op", jsonObj.getString("op"));
                 out.collect(Tuple2.of(afterJsonObj, tableProcessDim));
-            }
         }
     }
 

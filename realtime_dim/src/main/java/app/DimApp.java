@@ -9,6 +9,7 @@ import com.matthew.gmall.realtime.common.util.FlinkSourceUtil;
 import com.matthew.gmall.realtime.common.util.*;
 import com.ververica.cdc.connectors.mysql.source.MySqlSource;
 import com.ververica.cdc.connectors.mysql.table.StartupOptions;
+import function.HbaseSinkFunc;
 import function.connectProcFunc;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
@@ -19,14 +20,18 @@ import org.apache.flink.api.common.state.MapStateDescriptor;
 import org.apache.flink.api.common.state.ReadOnlyBroadcastState;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.configuration.Configuration;
+import org.apache.flink.connector.kafka.sink.KafkaSink;
 import org.apache.flink.streaming.api.datastream.BroadcastConnectedStream;
 import org.apache.flink.streaming.api.datastream.BroadcastStream;
+import org.apache.flink.streaming.api.datastream.DataStreamSink;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.co.BroadcastProcessFunction;
+import org.apache.flink.streaming.api.functions.sink.SinkFunction;
 import org.apache.flink.util.Collector;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -86,12 +91,20 @@ public class DimApp extends BaseApp {
         BroadcastConnectedStream<JSONObject, TableProcessDim> connectDS = jsonObjDS.connect(broadcastDS);
 
         //todo 6.对connect后的流进行处理，过滤维度数据
+        //({"birthday":"1968-02-08","op":"u","gender":"F","create_time":"2022-06-08 00:00:00","login_name":"ok3hqncd3wx"
+        // ,"nick_name":"晶妍","name":"方晶妍","user_level":"1","phone_num":"13199299968","id":50
+        // ,"email":"ok3hqncd3wx@0355.net"}
+        // ,TableProcessDim(sourceTable=user_info, sinkTable=dim_user_info, sinkColumns=id,login_name,name
+        // ,user_level,birthday,gender,create_time,operate_time, sinkFamily=info, sinkRowKey=id, op=r))
         SingleOutputStreamOperator<Tuple2<JSONObject, TableProcessDim>> processDS = connectDS.process(new connectProcFunc(configState));
-        processDS.printToErr();
+        // processDS.printToErr("processDS->");
 
         //todo 7.过滤不需要的字段
-        // SingleOutputStreamOperator<Tuple2<JSONObject, TableProcessDim>> filterDS = filterNeedColumn(processDS);
-        // filterDS.printToErr();
+        SingleOutputStreamOperator<Tuple2<JSONObject, TableProcessDim>> filterDS = filterNeedColumn(processDS);
+        filterDS.printToErr("filterDS->");
+
+        //todo 8.写出数据到HBASE,自定义sink，需要调用addSink 传入一个SinkFunction
+        filterDS.addSink(new HbaseSinkFunc());
 
 
     }
@@ -102,8 +115,8 @@ public class DimApp extends BaseApp {
                     @Override
                     public Tuple2<JSONObject, TableProcessDim> map(Tuple2<JSONObject, TableProcessDim> dataWithConfig) throws Exception {
                         JSONObject dataJsonObj = dataWithConfig.f0;
-                        String[] columns = dataWithConfig.f1.getSinkColumns().split(",");
-                        List<String> columnList = Arrays.asList(columns);
+                        //List<String> columnList = Arrays.asList(dataWithConfig.f1.getSinkColumns().split(","));会导致没有数据输出
+                        List<String> columnList = new ArrayList<>(Arrays.asList(dataWithConfig.f1.getSinkColumns().split(",")));
                         columnList.add("op");
                         dataJsonObj.keySet().removeIf(key -> !columnList.contains(key));
                         return dataWithConfig;
