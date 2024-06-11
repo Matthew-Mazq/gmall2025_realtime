@@ -34,7 +34,7 @@ public class HbaseSinkFunc implements SinkFunction<Tuple2<JSONObject, TableProce
         String rowKeyValue = data.getString(sinkRowKey);
         if("d".equals(op)){
             //从HBASE中删除数据,要传主键的值，而不是主键的名称
-            HBaseUtil.deleteRow(Constant.HBASE_NAMESPACE,sinkTable,sinkRowKey);
+            HBaseUtil.deleteRow(Constant.HBASE_NAMESPACE,sinkTable,rowKeyValue);
             log.info("从HBASE表:" + sinkTable + "中删除主键为:" + rowKeyValue + "的数据");
         }else{
             //添加数据，覆写操作insert+update

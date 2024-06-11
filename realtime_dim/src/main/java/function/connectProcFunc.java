@@ -64,16 +64,26 @@ public class connectProcFunc extends BroadcastProcessFunction<JSONObject, TableP
         TableProcessDim tableProcessDim;
         //获取主流数据的来源表名
         String sourceTable = jsonObj.getJSONObject("source").getString("table");
+        //获取操作类型
+        String op = jsonObj.getString("op");
         //判断是否包含该表名
         tableProcessDim = !broadcastState.contains(sourceTable) ? broadcastState.get(sourceTable) : configMap.get(sourceTable);
         if (tableProcessDim != null) {
             //({"birthday":"1991-06-07","op":"u","gender":"M","create_time":"2022-06-08 00:00:00","login_name":"vihcj30p1","nick_name":"豪心","name":"魏豪心","user_level":"1","phone_num":"13956932645","id":7,"email":"vihcj30p1@live.com"}
             // ,TableProcessDim(sourceTable=user_info, sinkTable=dim_user_info, sinkColumns=id,login_name,name,user_level,birthday,gender,create_time,operate_time, sinkFamily=info, sinkRowKey=id, op=r))
+            //如果是删除操作，则把before的数据放入out对象中，使得最后在输出到HBASE，调用SinkFunction时，能够获取到主键调用delete方法
+            if ("d".equals(op)) {
+                JSONObject beforeJsonObj = jsonObj.getJSONObject("before");
+                beforeJsonObj.put("op", op);
+                out.collect(Tuple2.of(beforeJsonObj, tableProcessDim));
+            } else {
                 JSONObject afterJsonObj = jsonObj.getJSONObject("after");
-                afterJsonObj.put("op", jsonObj.getString("op"));
+                afterJsonObj.put("op", op);
                 out.collect(Tuple2.of(afterJsonObj, tableProcessDim));
+            }
         }
     }
+
 
     //处理广播流的数据
     @Override
