@@ -28,7 +28,7 @@ public class OdsApp{
         //获取执行环境
         StreamExecutionEnvironment env = CreateEnvUtil.getStreamEnv(19999, 1, "ods_app");
         //todo 1.读取业务库的数据，封装为流
-        MySqlSource<String> mysqlCDCSource = FlinkSourceUtil.getMysqlCDCSource("5405", "gmall", Constant.DIM_TABLE_LIST, StartupOptions.initial());
+        MySqlSource<String> mysqlCDCSource = FlinkSourceUtil.getMysqlCDCSource("5405", "gmall", Constant.ODS_TABLE_LIST, StartupOptions.latest());
         SingleOutputStreamOperator<String> odsDimSource = env.fromSource(mysqlCDCSource, WatermarkStrategy.noWatermarks(), "ods_dim_source")
                 .uid("ods_dim_source");
         //todo 2.获取kafka-sink

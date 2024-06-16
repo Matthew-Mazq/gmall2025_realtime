@@ -65,6 +65,8 @@ public class FlinkSourceUtil {
         properties.setProperty("dateConverters.format.time", "HH:mm:ss");
         properties.setProperty("dateConverters.format.datetime", "yyyy-MM-dd HH:mm");
         properties.setProperty("dateConverters.format.timestamp", "yyyy-MM-dd HH:mm:ss");
+        //decimal数字解决
+        properties.setProperty("decimal.handling.mode", "string");
 
         //Jdbc Properties 的设置
         Properties props = new Properties();

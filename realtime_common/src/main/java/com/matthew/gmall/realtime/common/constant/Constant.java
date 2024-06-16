@@ -19,21 +19,9 @@ public class Constant {
     public static final int MYSQL_PORT = 3306;
     public static final String MYSQL_USER_NAME = "root";
     public static final String MYSQL_PASSWORD = "123456";
-    public static final String DIM_TABLE_LIST = "gmall.activity_info\n" +
-                                    ",gmall.activity_rule\n" +
-                                    ",gmall.activity_sku\n" +
-                                    ",gmall.base_category1\n" +
-                                    ",gmall.base_category2\n" +
-                                    ",gmall.base_category3\n" +
-                                    ",gmall.base_province\n" +
-                                    ",gmall.base_region\n" +
-                                    ",gmall.base_trademark\n" +
-                                    ",gmall.coupon_info\n" +
-                                    ",gmall.coupon_range\n" +
-                                    ",gmall.financial_sku_cost\n" +
-                                    ",gmall.sku_info\n" +
-                                    ",gmall.spu_info\n" +
-                                    ",gmall.user_info";
+    public static final String ODS_TABLE_LIST = "gmall.*";
+    public static final String CONFIG_DWD_DATABASE = "gmall2023_config";
+    public static final String CONFIG_DWD_TABLE_LIST = "gmall2023_config.table_process_dwd";
     public static final String HBASE_NAMESPACE = "gmall";
     public static final String HBASE_ZOOKEEPER_QUORUM ="node1,node2,node3";
 
