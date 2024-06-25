@@ -47,5 +47,7 @@ public class Constant {
     public static final String TOPIC_DWD_TRADE_REFUND_PAYMENT_SUCCESS = "dwd_trade_refund_payment_success";
 
     public static final String TOPIC_DWD_USER_REGISTER = "dwd_user_register";
+    public static final String STARROCKS_FE_IP = "node1";
+    public static final String STARROCKS_DATABASES = "gmall2023_realtime";
 
 }
