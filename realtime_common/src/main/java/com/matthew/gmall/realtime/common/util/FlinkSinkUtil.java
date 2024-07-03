@@ -3,14 +3,16 @@ package com.matthew.gmall.realtime.common.util;
 import com.alibaba.fastjson.JSONObject;
 import com.matthew.gmall.realtime.common.bean.TableProcessDwd;
 import com.matthew.gmall.realtime.common.constant.Constant;
-import org.apache.commons.lang.StringUtils;
+import com.starrocks.connector.flink.StarRocksSink;
+import com.starrocks.connector.flink.table.sink.StarRocksSinkOptions;
+
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.api.connector.sink2.Sink;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.connector.kafka.sink.KafkaRecordSerializationSchema;
 import org.apache.flink.connector.kafka.sink.KafkaSink;
+import org.apache.flink.streaming.api.functions.sink.SinkFunction;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import redis.clients.jedis.Tuple;
 
 import javax.annotation.Nullable;
 import java.nio.charset.StandardCharsets;
@@ -66,5 +68,22 @@ public class FlinkSinkUtil {
                 // .setTransactionalIdPrefix(transIdPrefix)
                 // .setProperty(ProducerConfig.TRANSACTION_TIMEOUT_CONFIG,transactionTimeout)
                 .build();
+    }
+
+    public static SinkFunction<String> getSRSink(String tableName, String labelPre){
+            StarRocksSinkOptions options = StarRocksSinkOptions.<String>builder()
+                    .withProperty("jdbc-url", "jdbc:mysql://"+ Constant.STARROCKS_FE_IP +":9030")
+                    .withProperty("load-url", Constant.STARROCKS_FE_IP +":8030'")
+                    .withProperty("database-name", "gmall2023_realtime")
+                    .withProperty("table-name", tableName)
+                    .withProperty("username", "root")
+                    .withProperty("password", "123456")
+                    .withProperty("sink.properties.format", "json")
+                    .withProperty("sink.label-prefix",labelPre + System.currentTimeMillis())
+                    .withProperty("sink.properties.strip_outer_array", "true")
+                    .build();
+            // Create the sink with the options.
+        return StarRocksSink.sink(options);
+
     }
 }
