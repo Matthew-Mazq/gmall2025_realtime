@@ -31,7 +31,7 @@ public class FlinkSourceUtil {
                 .setBootstrapServers(Constant.KAFKA_BROKERS)
                 .setGroupId(groupId)
                 .setTopics(topic)
-                .setStartingOffsets(OffsetsInitializer.latest())
+                .setStartingOffsets(OffsetsInitializer.earliest())
                 //处理序列器不能处理空消息的bug
                 .setValueOnlyDeserializer(new DeserializationSchema<String>() {
                     @Override
